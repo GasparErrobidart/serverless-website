@@ -12,7 +12,9 @@ app.use(express.static(path.join(__dirname, './public')));
 module.exports.render = (event,context,callback)=>{
   let template = "home";
   let templateParameters = event;
+  templateParameters.env = process.env;
   console.log("\n\nPath:",event.path);
+  console.log("Process.env",process.env);
   switch(event.path){
     case '/about':
       template = "about"

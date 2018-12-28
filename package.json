@@ -18,6 +18,6 @@
     "colors": "^1.3.3",
     "jest": "^23.6.0",
     "minimist": "^1.2.0",
-    "sam-launchpad": "^1.1.14"
+    "sam-launchpad": "^1.1.16"
   }
 }

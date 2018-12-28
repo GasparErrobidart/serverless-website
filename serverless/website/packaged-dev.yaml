@@ -6,6 +6,8 @@ Globals:
       Variables:
         STAGE:
           Fn::Sub: ${Environment}
+        TESTPARAMETER:
+          Fn::Sub: ${TestParam}
     Timeout: 60
 Outputs:
   API:
@@ -16,6 +18,8 @@ Parameters:
   Environment:
     Type: String
   ProjectName:
+    Type: String
+  TestParam:
     Type: String
 Resources:
   ConfigLambdaPermission:
@@ -30,7 +34,7 @@ Resources:
     Type: AWS::Lambda::Permission
   GetPageFunction:
     Properties:
-      CodeUri: s3://serverless-website-sam-launchpad/dev/website/d10ecd5bdad65445767d2938e93344d9
+      CodeUri: s3://serverless-website-sam-launchpad/dev/website/96ec364f19a5e86b489754e72d048bd2
       Events:
         GetPageEndpoint:
           Properties:

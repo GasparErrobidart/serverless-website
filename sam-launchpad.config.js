@@ -8,6 +8,9 @@ module.exports = {
     "build" : `npm i && npm run build`,
     "test" : `npm test`
   },
+  "template_parameters":{
+    "TestParam" : "myTestParameter"
+  },
   "hooks": {
     "after-validation" : [
       (opts)=>{
