@@ -1,0 +1,92 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Portal Driver serverless core
+
+
+Parameters:
+
+  Environment:
+    Type: String
+  ProjectName:
+    Type: String
+
+Globals:
+    Function:
+        Timeout: 60
+        Environment:
+          Variables:
+            STAGE: !Sub ${Environment}
+
+Resources:
+    ConfigLambdaPermission:
+      Type: "AWS::Lambda::Permission"
+      DependsOn:
+      - ServerlessWebsiteAPI
+      - GetPageFunction
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref GetPageFunction
+        Principal: apigateway.amazonaws.com
+
+    ServerlessWebsiteAPI:
+      Type: AWS::Serverless::Api
+      Properties:
+        Cors:
+          AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          AllowOrigin: "'*'"
+          MaxAge: "'86400'"
+        StageName: !Sub ${Environment}
+        DefinitionBody:
+          swagger: 2.0
+          info:
+            title: !Sub ${ProjectName}-${Environment}
+          paths:
+            /:
+              get:
+                responses: {}
+                x-amazon-apigateway-integration:
+                  httpMethod: POST
+                  type: aws_proxy
+                  uri:
+                    !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPageFunction.Arn}/invocations
+            /about:
+              get:
+                responses: {}
+                x-amazon-apigateway-integration:
+                  httpMethod: POST
+                  type: aws_proxy
+                  uri:
+                    !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPageFunction.Arn}/invocations
+
+    GetPageFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+            FunctionName: !Sub GetPageFunction-${Environment}
+            CodeUri: .
+            Handler: index.render
+            Runtime: nodejs8.10
+            Events:
+                GetPageEndpoint:
+                    Type: Api
+                    Properties:
+                        Path: /
+                        Method: get
+                        RestApiId:
+                          Ref: ServerlessWebsiteAPI
+
+Outputs:
+    API:
+        Value: !Sub https://${ServerlessWebsiteAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+        Description: Root endpoint
+
+#     HelloWorldApi:
+#       Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+#       Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+#
+#     HelloWorldFunction:
+#       Description: "Hello World Lambda Function ARN"
+#       Value: !GetAtt HelloWorldFunction.Arn
+#
+#     HelloWorldFunctionIamRole:
+#       Description: "Implicit IAM Role created for Hello World function"
+#       Value: !GetAtt HelloWorldFunctionRole.Arn

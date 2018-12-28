@@ -1,0 +1,12 @@
+swagger: 2.0
+info:
+  title: !Sub ${ProjectName}
+paths:
+  /artists:
+    get:
+      responses: {}
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetArtistsFunction.Arn}/invocations

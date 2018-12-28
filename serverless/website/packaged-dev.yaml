@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Portal Driver serverless core
+Globals:
+  Function:
+    Environment:
+      Variables:
+        STAGE:
+          Fn::Sub: ${Environment}
+    Timeout: 60
+Outputs:
+  API:
+    Description: Root endpoint
+    Value:
+      Fn::Sub: https://${ServerlessWebsiteAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+Parameters:
+  Environment:
+    Type: String
+  ProjectName:
+    Type: String
+Resources:
+  ConfigLambdaPermission:
+    DependsOn:
+    - ServerlessWebsiteAPI
+    - GetPageFunction
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Ref: GetPageFunction
+      Principal: apigateway.amazonaws.com
+    Type: AWS::Lambda::Permission
+  GetPageFunction:
+    Properties:
+      CodeUri: s3://serverless-website-sam-launchpad/dev/website/a75f0d255849b8eecef297ae74cb11f4
+      Events:
+        GetPageEndpoint:
+          Properties:
+            Method: get
+            Path: /
+            RestApiId:
+              Ref: ServerlessWebsiteAPI
+          Type: Api
+      FunctionName:
+        Fn::Sub: GetPageFunction-${Environment}
+      Handler: index.render
+      Runtime: nodejs8.10
+    Type: AWS::Serverless::Function
+  ServerlessWebsiteAPI:
+    Properties:
+      Cors:
+        AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+        AllowOrigin: '''*'''
+        MaxAge: '''86400'''
+      DefinitionBody:
+        info:
+          title:
+            Fn::Sub: ${ProjectName}-${Environment}
+        paths:
+          /:
+            get:
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPageFunction.Arn}/invocations
+          /about:
+            get:
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetPageFunction.Arn}/invocations
+        swagger: 2.0
+      StageName:
+        Fn::Sub: ${Environment}
+    Type: AWS::Serverless::Api
+Transform: AWS::Serverless-2016-10-31

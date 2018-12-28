@@ -1,0 +1,20 @@
+{
+  "name": "portal-driver-serverless-core",
+  "version": "1.0.0",
+  "description": "This is a sample template for sam-app - Below is a brief explanation of what we have generated for you:",
+  "main": "build.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "echo no build required",
+    "test": "echo no tests available",
+    "start": "sam local start-api"
+  },
+  "author": "Gaspar G. Errobidart",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mustache-express": "^1.2.8"
+  }
+}
