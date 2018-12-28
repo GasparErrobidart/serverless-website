@@ -8,7 +8,7 @@ my-serverless-project/
 ├── package.json
 ├── README.md
 ├── sam-launchpad.config.js
-└── serverless/
+└── projects/
     ├── user-authenticator
     │   ├── template.yaml
     └── user-file-processor
@@ -47,13 +47,13 @@ You are ready to start.
 
 - Create a configuration file `sam-launchpad.config.js` in your root directory.
 
-```
+```javascript
 // sam-launchpad.config.js
 const join = require('path').join;
 
 module.exports = {
-  "project_name" : "portal-driver-serverless",
-  "base_path" : join( __dirname , "./serverless" ),
+  "project_name" : "my-serverless-app",
+  "projects" : join( __dirname , "./projects" ),
   "commands" : {
     /*
       This commands will be executed once per project in it's local context.
@@ -75,7 +75,8 @@ module.exports = {
 
 ## Cheat sheet
 
-```
+```javascript
+{
 // Run the whole thing
 "publish": "sam-launchpad",
 // Just build
@@ -88,13 +89,14 @@ module.exports = {
 "package": "sam-launchpad --skip-deploy --skip-build --skip-coverage --skip-validation",
 //Just deploy to Cloud Formation using SAM
 "deploy": "sam-launchpad --skip-package --skip-build --skip-coverage --skip-validation"
+}
 ```
 
 ## Creating a sub-project
 - Sub-projects should be located directly under the base path directory specified in the configuration file.
 - A SAM `template.yaml` file is expected on the proejct root directory.
 - Templates should define two basic parameters, `Environment` and `ProjectName`:
-```
+```yaml
 // /template.yaml
 AWSTemplateFormatVersion: ...
 Transform: AWS::Serverless-2016-10-31
@@ -112,8 +114,8 @@ Globals: ...
 ```
 - Parameter variables are the recommended way for creating multiple stages.
 - The name of said folder will be used as suffix in the Cloud Formation stack name.
-- If you plan on using the root automation script for building, you must provide a package.json file specifying a `build` script.
-- If you plan on using the root automation script for testing, you must provide a package.json file specifying a `test` script.
+- If you plan on using the root automation script for building, you must provide the right context on your project to execute the `build` command you provided on the configuration.
+- If you plan on using the root automation script for running tests, you must provide the right context on your project to execute the `test` command you provided on the configuration.
 
 ### Multi stack
 Using multiple stacks is recommended [multi stack approach](https://hackernoon.com/managing-multi-environment-serverless-architecture-using-aws-an-investigation-6cd6501d261e).
@@ -137,9 +139,9 @@ Required `yes`
 Directory were all your sub projects are stored (even if you only have 1 project). The sub directories of this path will be treated as sub projects.
 
 For example if you define this `base_path`.
-```
+```javascript
   ...
-  "base_path" : join( __dirname , "./serverless" )
+  "base_path" : join( __dirname , "./projects" )
   ...
 ```
 
@@ -147,12 +149,16 @@ Your structure could look similar to this example:
 ```
 my-serverless-project/
 ├── ...
-└── serverless/
+└── projects/
     ├── core
     │   ├── template.yaml
     └── secondary-project
         └── template.yaml
 ```
+
+### projects
+
+An alias for `base_path`.
 
 #### Commands
 
@@ -246,6 +252,45 @@ Default `false`
 ```
 sam-launchpad --verbose
 ```
+
+## Hooks
+
+You can provide additional functions to execute before and after each step:
+```javascript
+// sam-launchpad.config.js
+const join = require('path').join;
+
+module.exports = {
+  "project_name" : "my-serverless-app",
+  ...
+  "commands" : {
+    ...
+  },
+  "hooks" : {
+    "before-build" : [
+      "echo before build",
+      function(opts){
+        // A promise is expected
+        return new Promise((resolve,reject)=>{
+          const {args , apps, config} = opts;
+
+          // Do something
+
+          // You can either pass on the options after changing or adding
+          // attributes.
+          // resolve({args, apps, config});
+
+          //or return nothing to maintain the options received.
+          resolve();
+        })
+      }
+    ]
+  }
+
+}
+```
+
+An array of commands and or functions is expected.
 
 
 ## Project structure

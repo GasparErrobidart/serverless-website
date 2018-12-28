@@ -30,7 +30,7 @@ Resources:
     Type: AWS::Lambda::Permission
   GetPageFunction:
     Properties:
-      CodeUri: s3://serverless-website-sam-launchpad/dev/website/a75f0d255849b8eecef297ae74cb11f4
+      CodeUri: s3://serverless-website-sam-launchpad/dev/website/d10ecd5bdad65445767d2938e93344d9
       Events:
         GetPageEndpoint:
           Properties:
